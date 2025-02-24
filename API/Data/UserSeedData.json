@@ -1,0 +1,65 @@
+[
+  {
+    "UserName": "izegergo",
+    "Email": "izegergo@mail.com",
+    "Firstname": "Gergő",
+    "Lastname": "Izé",
+    "DateOfBirth": "1998-12-03",
+    "Created": "2019-12-16",
+    "LastActive": "2020-06-14"
+  },
+  {
+    "UserName": "lilla",
+    "Email": "horvathlilla@mail.com",
+    "Firstname": "Lilla",
+    "Lastname": "Horváth",
+    "DateOfBirth": "1995-06-18",
+    "Created": "2012-02-12",
+    "LastActive": "2025-02-20"
+  },
+  {
+    "UserName": "bence",
+    "Email": "kovacsbence@mail.com",
+    "Firstname": "Bence",
+    "Lastname": "Kovács",
+    "DateOfBirth": "1992-07-25",
+    "Created": "2015-09-30",
+    "LastActive": "2023-12-10"
+  },
+  {
+    "UserName": "anna",
+    "Email": "nagyanna@mail.com",
+    "Firstname": "Anna",
+    "Lastname": "Nagy",
+    "DateOfBirth": "2000-04-15",
+    "Created": "2021-06-05",
+    "LastActive": "2024-02-15"
+  },
+  {
+    "UserName": "adamka",
+    "Email": "szaboadam@mail.com",
+    "Firstname": "Ádám",
+    "Lastname": "Szabó",
+    "DateOfBirth": "1988-11-03",
+    "Created": "2010-12-01",
+    "LastActive": "2022-08-22"
+  },
+  {
+    "UserName": "dorika",
+    "Email": "tothdora@mail.com",
+    "Firstname": "Dóra",
+    "Lastname": "Tóth",
+    "DateOfBirth": "1996-09-09",
+    "Created": "2018-03-14",
+    "LastActive": "2024-01-05"
+  },
+  {
+    "UserName": "martika",
+    "Email": "kissmarton@mail.com",
+    "Firstname": "Márton",
+    "Lastname": "Kiss",
+    "DateOfBirth": "1993-05-20",
+    "Created": "2013-07-22",
+    "LastActive": "2023-05-30"
+  }
+]
