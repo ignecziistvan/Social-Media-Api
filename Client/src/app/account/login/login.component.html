@@ -1,0 +1,22 @@
+<form [formGroup]="loginForm" (ngSubmit)="login()">
+  <h2>Sign up</h2>
+
+  <app-text-input
+    [formControl]="$any(loginForm.controls['userNameOrEmail'])"
+    [label]="'Username or Email'"
+  />
+
+  <app-text-input
+    [formControl]="$any(loginForm.controls['password'])"
+    [type]="'password'"
+    [label]="'Password'"
+  />
+
+  @if (error) { <p>{{error}}</p> }
+
+  <div>
+    <button [disabled]="!loginForm.valid" type="submit">Login</button>
+    <button (click)="cancel()" type="button">Cancel</button>
+  </div>
+
+</form>

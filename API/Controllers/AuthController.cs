@@ -13,20 +13,20 @@ public class AuthController(UserManager<User> userManager, ITokenService tokenSe
     [HttpPost("login")]
     public async Task<ActionResult<AccountDto>> Login(LoginDto loginDto)
     {
-        if (loginDto.UserName == string.Empty && loginDto.Email == string.Empty) 
+        if (loginDto.UserNameOrEmail == string.Empty) 
             return BadRequest("You must provide a username or email");
         
         User? user = null;
 
-        if (loginDto.UserName != string.Empty) 
+        if (loginDto.UserNameOrEmail.Contains('@')) 
         {
             user = await userManager.Users
-                .Where(user => user.NormalizedUserName == loginDto.UserName.ToUpper())
+                .Where(user => user.NormalizedEmail== loginDto.UserNameOrEmail.ToUpper())
                 .FirstOrDefaultAsync();
-        } else if (loginDto.Email != string.Empty)
+        } else 
         {
             user = await userManager.Users
-                .Where(user => user.NormalizedEmail == loginDto.Email.ToUpper())
+                .Where(user => user.NormalizedUserName == loginDto.UserNameOrEmail.ToUpper())
                 .FirstOrDefaultAsync();
         }
 

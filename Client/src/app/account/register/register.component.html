@@ -1,0 +1,54 @@
+<form [formGroup]="registerForm" (ngSubmit)="register()">
+  <h2>Sign up</h2>
+
+  <app-text-input
+    [formControl]="$any(registerForm.controls['userName'])"
+    [label]="'Username'"
+  />
+
+  <app-text-input
+    [formControl]="$any(registerForm.controls['email'])"
+    [label]="'Email'"
+  />
+
+  <app-text-input
+    [formControl]="$any(registerForm.controls['password'])"
+    [label]="'Password'"
+  />
+
+  <app-text-input
+    [formControl]="$any(registerForm.controls['confirmPassword'])"
+    [label]="'Confirm password'"
+  />
+
+  <app-text-input
+    [formControl]="$any(registerForm.controls['dateOfBirth'])"
+    [label]="'Date of birth'"
+  />
+
+  <app-text-input
+    [formControl]="$any(registerForm.controls['firstname'])"
+    [label]="'Firstname'"
+  />
+
+  <app-text-input
+    [formControl]="$any(registerForm.controls['lastname'])"
+    [label]="'Lastname'"
+  />
+
+  @if (validationErrors) {
+    <div>
+      <ul>
+        @for (error of validationErrors; track $index) {
+          <li>{{error}}</li>
+        }
+      </ul>
+    </div>
+  }
+
+  <div>
+    <button [disabled]="!registerForm.valid" type="submit">Register</button>
+    <button (click)="cancel()" type="button">Cancel</button>
+  </div>
+
+</form>
