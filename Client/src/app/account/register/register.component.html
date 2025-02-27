@@ -13,15 +13,17 @@
 
   <app-text-input
     [formControl]="$any(registerForm.controls['password'])"
+    [type]="'password'"
     [label]="'Password'"
   />
 
   <app-text-input
     [formControl]="$any(registerForm.controls['confirmPassword'])"
+    [type]="'password'"
     [label]="'Confirm password'"
   />
 
-  <app-text-input
+  <app-date-picker 
     [formControl]="$any(registerForm.controls['dateOfBirth'])"
     [label]="'Date of birth'"
   />
@@ -36,15 +38,7 @@
     [label]="'Lastname'"
   />
 
-  @if (validationErrors) {
-    <div>
-      <ul>
-        @for (error of validationErrors; track $index) {
-          <li>{{error}}</li>
-        }
-      </ul>
-    </div>
-  }
+  @if (responseError) { <p>{{responseError}}</p> }
 
   <div>
     <button [disabled]="!registerForm.valid" type="submit">Register</button>

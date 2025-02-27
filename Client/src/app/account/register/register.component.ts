@@ -3,11 +3,12 @@ import { AbstractControl, FormBuilder, FormGroup, ReactiveFormsModule, Validator
 import { Router } from '@angular/router';
 import { AccountService } from '../../_services/account.service';
 import { TextInputComponent } from "../../_forms/text-input/text-input.component";
+import { DatePickerComponent } from "../../_forms/date-picker/date-picker.component";
 
 @Component({
   selector: 'app-register',
   standalone: true,
-  imports: [ReactiveFormsModule, TextInputComponent],
+  imports: [ReactiveFormsModule, TextInputComponent, DatePickerComponent],
   templateUrl: './register.component.html',
   styleUrl: './register.component.scss'
 })
@@ -16,7 +17,7 @@ export class RegisterComponent implements OnInit {
   private router = inject(Router);
   private fb = inject(FormBuilder);
   cancelRegister = output<boolean>();
-  validationErrors: string[] | undefined;
+  responseError: string | undefined;
   registerForm: FormGroup = new FormGroup({});
   maxDate = new Date();
 
@@ -29,7 +30,7 @@ export class RegisterComponent implements OnInit {
       userName: ['', Validators.required],
       email: ['', [Validators.required, Validators.email]],
       dateOfBirth: ['', Validators.required],
-      firtname: ['', Validators.required],
+      firstname: ['', Validators.required],
       lastname: ['', Validators.required],
       password: ['', [
         Validators.required, Validators.minLength(8), Validators.maxLength(32)
@@ -49,12 +50,12 @@ export class RegisterComponent implements OnInit {
   }
 
   register() {
-    const dob = this.getDateOnly(this.registerForm.get('dateOfBirth')?.value);
-    this.registerForm.patchValue({dateOfBirth: dob});
+    const patchedForm = this.registerForm.value;
+    patchedForm.dateOfBirth = this.convertDateFormat(this.registerForm.get('dateOfBirth')?.value);
 
-    this.accountService.register(this.registerForm.value).subscribe({
+    this.accountService.register(patchedForm).subscribe({
       next: _ => this.router.navigateByUrl('/'),
-      error: e => this.validationErrors = e
+      error: e => this.responseError = e.error
     });
   }
 
@@ -62,8 +63,9 @@ export class RegisterComponent implements OnInit {
     this.cancelRegister.emit(false);
   }
 
-  private getDateOnly(dob: string | undefined) {
+  private convertDateFormat(dob: string | undefined) {
     if (!dob) return;
-    return new Date(dob).toISOString().slice(0, 10);
+    const date = new Date(dob);
+    return date.getFullYear().toString() + '-' + (date.getMonth() + 1).toString() + '-' + date.getDate().toString();
   }
 }
