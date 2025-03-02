@@ -5,7 +5,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace API.Dtos;
+namespace API.Dtos.Request;
 
 public class LoginDto
 {

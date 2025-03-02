@@ -1,11 +1,11 @@
-using API.Dtos;
+using API.Dtos.Response;
 using API.Interfaces;
 using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers;
 
-public class UserController(IUserRepository repository, IMapper mapper) : BaseApiController
+public class UserController(IUserRepository repository) : BaseApiController
 {
     [HttpGet("{username}")]
     public async Task<ActionResult<UserDto>> GetUser([FromRoute] string username)

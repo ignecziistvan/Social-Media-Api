@@ -14,4 +14,5 @@ public class User : IdentityUser<int>
     public DateTime LastActive { get; set; } = DateTime.UtcNow;
     public DateOnly DateOfBirth { get; set; }
     public ICollection<UserRole> UserRoles { get; set; } = [];
+    public List<Post> Posts { get; set; } = [];
 }
