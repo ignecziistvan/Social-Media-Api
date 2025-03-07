@@ -1,7 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Identity;
 
 namespace API.Entities;
@@ -16,4 +12,5 @@ public class User : IdentityUser<int>
     public ICollection<UserRole> UserRoles { get; set; } = [];
     public List<Post> Posts { get; set; } = [];
     public List<Comment> Comments { get; set; } = [];
+    public List<Like> LikedPosts { get; set; } = [];
 }

@@ -1,7 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using API.Dtos.Request;
 using API.Dtos.Response;
 using API.Entities;
@@ -21,5 +17,10 @@ public class AutoMapperProfiles : Profile
             .ForMember(d => d.UserName, o => o.MapFrom(s => s.User.UserName));
         CreateMap<Comment, CommentDto>()
             .ForMember(d => d.UserName, o => o.MapFrom(s => s.User.UserName));
+        CreateMap<Like, LikeDto>();
+        CreateMap<DateTime, DateTime>()
+            .ConvertUsing(d => DateTime.SpecifyKind(d, DateTimeKind.Utc));
+        CreateMap<DateTime?, DateTime?>().ConvertUsing(d => d.HasValue 
+            ? DateTime.SpecifyKind(d.Value, DateTimeKind.Utc) : null);
     }
 }

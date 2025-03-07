@@ -1,6 +1,5 @@
 using API.Dtos.Response;
 using API.Interfaces;
-using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers;

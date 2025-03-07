@@ -1,8 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-
 namespace API.Dtos.Response;
 
 public class PostDto
@@ -14,5 +9,6 @@ public class PostDto
     
     public required string Text { get; set; }
     public required List<CommentDto> Comments { get; set; }
+    public required List<LikeDto> LikedByUsers { get; set; }
     public required DateTime Created { get; set; }
 }

@@ -12,6 +12,7 @@ public class DataContext(DbContextOptions options) : IdentityDbContext<User, Rol
 {
     public DbSet<Post> Posts { get; set; }
     public DbSet<Comment> Comments { get; set; }
+    public DbSet<Like> PostLikes { get; set; }
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -45,6 +46,18 @@ public class DataContext(DbContextOptions options) : IdentityDbContext<User, Rol
             .HasOne(c => c.Post)
             .WithMany(p => p.Comments)
             .HasForeignKey(c => c.PostId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        builder.Entity<Like>()
+            .HasOne(l => l.User)
+            .WithMany(u => u.LikedPosts)
+            .HasForeignKey(l => l.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        builder.Entity<Like>()
+            .HasOne(l => l.Post)
+            .WithMany(p => p.LikedByUsers)
+            .HasForeignKey(l => l.PostId)
             .OnDelete(DeleteBehavior.Cascade);
     }
 }
