@@ -15,4 +15,5 @@ public class User : IdentityUser<int>
     public DateOnly DateOfBirth { get; set; }
     public ICollection<UserRole> UserRoles { get; set; } = [];
     public List<Post> Posts { get; set; } = [];
+    public List<Comment> Comments { get; set; } = [];
 }

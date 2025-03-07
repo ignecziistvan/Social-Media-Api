@@ -19,5 +19,7 @@ public class AutoMapperProfiles : Profile
         CreateMap<string, DateOnly>().ConvertUsing(s => DateOnly.Parse(s));
         CreateMap<Post, PostDto>()
             .ForMember(d => d.UserName, o => o.MapFrom(s => s.User.UserName));
+        CreateMap<Comment, CommentDto>()
+            .ForMember(d => d.UserName, o => o.MapFrom(s => s.User.UserName));
     }
 }
