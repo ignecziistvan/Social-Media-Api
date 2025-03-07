@@ -1,9 +1,4 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using API.Data;
-using API.Dtos;
+using API.Dtos.Response;
 using API.Entities;
 using API.Interfaces;
 using AutoMapper;
@@ -14,6 +9,11 @@ namespace API.Data;
 
 public class UserRepository(DataContext context, IMapper mapper) : IUserRepository
 {
+    public async Task<bool> Complete()
+    {
+        return await context.SaveChangesAsync() > 0;
+    }
+
     public async Task<IEnumerable<UserDto>> GetAllUsers()
     {
         return await context.Users
@@ -26,6 +26,20 @@ public class UserRepository(DataContext context, IMapper mapper) : IUserReposito
         return await context.Users
             .Where(user => user.UserName == username)
             .ProjectTo<UserDto>(mapper.ConfigurationProvider)
+            .SingleOrDefaultAsync();
+    }
+
+    public async Task<User?> GetUserByIdAsNonDto(int id)
+    {
+        return await context.Users
+            .Where(user => user.Id == id)
+            .SingleOrDefaultAsync();
+    }
+
+    public async Task<User?> GetUserByUserNameAsNonDto(string username)
+    {
+        return await context.Users
+            .Where(user => user.UserName == username)
             .SingleOrDefaultAsync();
     }
 }

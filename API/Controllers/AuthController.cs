@@ -1,4 +1,5 @@
-using API.Dtos;
+using API.Dtos.Request;
+using API.Dtos.Response;
 using API.Entities;
 using API.Interfaces;
 using AutoMapper;
