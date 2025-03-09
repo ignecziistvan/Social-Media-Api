@@ -1,5 +1,6 @@
 using API.Dtos.Response;
 using API.Entities;
+using API.Extensions;
 using API.Interfaces;
 using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
@@ -22,7 +23,7 @@ public class LikeController(ILikeRepository likeRepository, IPostRepository post
     [HttpGet("post/{postId}")]
     public async Task<ActionResult<List<LikeDto>>> GetLikesOfPost(int postId)
     {
-        PostDto? post = await postRepository.GetPost(postId);
+        Post? post = await postRepository.GetPost(postId);
         if (post == null) return NotFound("Post was not found by ID");
 
         return Ok(mapper.Map<List<LikeDto>>(await likeRepository.GetLikesOfPostById(postId)));
@@ -41,25 +42,22 @@ public class LikeController(ILikeRepository likeRepository, IPostRepository post
     [HttpPost("post/{postId}")]
     public async Task<ActionResult<bool>> LikePost(int postId)
     {
-        string? username = User.Identity?.Name;
-        if (username == null) return Forbid("Unauthenticated");
+        int userId = User.GetUserId();
+        string username = User.GetUsername();
 
-        User? user = await userRepository.GetUserByUserNameAsNonDto(username);
-        if (user == null) return NotFound("User was not found by authentication");
-
-        PostDto? post = await postRepository.GetPost(postId);
+        Post? post = await postRepository.GetPost(postId);
         if (post == null) return NotFound("Post was not found by ID");
 
-        Like? like = await likeRepository.GetSingleLikeByUserIdAndPostId(user.Id, postId);
+        Like? like = await likeRepository.GetSingleLikeByUserIdAndPostId(userId, postId);
         if (like != null) 
             return BadRequest("You have already liked this Post");
 
         likeRepository.LikePost(
             new Like
             {
-                UserId = user.Id,
+                UserId = userId,
                 PostId = postId,
-                UserName = user.UserName!
+                UserName = username
             }
         );
 
@@ -72,16 +70,12 @@ public class LikeController(ILikeRepository likeRepository, IPostRepository post
     [HttpDelete("post/{postId}")]
     public async Task<ActionResult<bool>> UnlikePost(int postId)
     {
-        string? username = User.Identity?.Name;
-        if (username == null) return Forbid("Unauthenticated");
+        int userId = User.GetUserId();
 
-        User? user = await userRepository.GetUserByUserNameAsNonDto(username);
-        if (user == null) return NotFound("User was not found by authentication");
-
-        PostDto? post = await postRepository.GetPost(postId);
+        Post? post = await postRepository.GetPost(postId);
         if (post == null) return NotFound("Post was not found by ID");
 
-        Like? like = await likeRepository.GetSingleLikeByUserIdAndPostId(user.Id, postId);
+        Like? like = await likeRepository.GetSingleLikeByUserIdAndPostId(userId, postId);
         if (like == null) 
             return BadRequest("You have not liked this Post yet");
 

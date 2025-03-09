@@ -3,8 +3,8 @@
 ### Functionality
 - JWT authentication - authorization
 - View the profile of users
-- Create and delete posts
-- Create and delete pomments to posts
+- CRUD Posts
+- CRUD Comments
 - Like and unlike posts
 
 ### Tech stack

@@ -14,11 +14,20 @@ public class CommentRepository(DataContext context, IMapper mapper) : ICommentRe
         context.Comments.Add(comment);
     }
 
-    public async Task<CommentDto?> GetCommentById(int id)
+    public void DeleteComment(Comment comment)
+    {
+        context.Comments.Remove(comment);
+    }
+
+    public void UpdateComment(Comment comment)
+    {
+        context.Entry(comment).State = EntityState.Modified;
+    }
+
+    public async Task<Comment?> GetCommentById(int id)
     {
         return await context.Comments
             .Where(c => c.Id == id)
-            .ProjectTo<CommentDto>(mapper.ConfigurationProvider)
             .FirstOrDefaultAsync();
     }
 

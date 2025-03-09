@@ -1,12 +1,14 @@
 using API.Dtos.Response;
 using API.Entities;
+using API.Extensions;
 using API.Interfaces;
+using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers;
 
-public class PostController(IPostRepository repository, IUserRepository userRepository) : BaseApiController
+public class PostController(IPostRepository repository, IUserRepository userRepository, IMapper mapper) : BaseApiController
 {
     [HttpGet]
     public async Task<ActionResult<IEnumerable<PostDto>>> GetLatestPosts([FromQuery] int? count) 
@@ -17,11 +19,11 @@ public class PostController(IPostRepository repository, IUserRepository userRepo
     [HttpGet("{id}")]
     public async Task<ActionResult<PostDto>> GetPost(int id) 
     {
-        PostDto? post = await repository.GetPost(id);
+        Post? post = await repository.GetPost(id);
 
         if (post == null) return NotFound("Post was not found");
         
-        return Ok(post);
+        return Ok(mapper.Map<PostDto>(post));
     }
 
     [HttpGet("user/{username}")]
@@ -36,20 +38,14 @@ public class PostController(IPostRepository repository, IUserRepository userRepo
 
     [Authorize]
     [HttpPost]
-    public async Task<ActionResult<PostDto>> CreatePost([FromBody] string text)
+    public async Task<ActionResult> CreatePost([FromBody] string text)
     {
-        string? userName = User.Identity?.Name;
-
-        if (userName == null) return Forbid("No identity");
-
-        User? user = await userRepository.GetUserByUserNameAsNonDto(userName);
-
-        if (user == null) return NotFound("User was not found");
+        int userId = User.GetUserId();
 
         repository.CreatePost(
             new Post
             {
-                UserId = user.Id,
+                UserId = userId,
                 Text = text
             }
         );
@@ -57,5 +53,44 @@ public class PostController(IPostRepository repository, IUserRepository userRepo
         if (await repository.Complete()) return Ok();
 
         return BadRequest("Failed to create Post");
+    }
+
+    [Authorize]
+    [HttpDelete("{id}")]
+    public async Task<ActionResult> DeletePost(int id)
+    {
+        int userId = User.GetUserId();
+
+        Post? post = await repository.GetPost(id);
+        if (post == null) return NotFound("Post was not found");
+
+        if (post.UserId != userId) return BadRequest("Cannot delete someone elses post");
+
+        repository.DeletePost(post);
+
+        if (await repository.Complete()) return Ok();
+
+        return BadRequest("Failed to delete Post");
+    }
+
+    [Authorize]
+    [HttpPut("{id}")]
+    public async Task<ActionResult> UpdatePost(int id, [FromBody] string text)
+    {
+        if (text == null || text == string.Empty) return BadRequest("You must provide a text");
+
+        int userId = User.GetUserId();
+
+        Post? post = await repository.GetPost(id);
+        if (post == null) return NotFound("Post was not found");
+
+        if (post.UserId != userId) return BadRequest("Cannot update someone elses post");
+
+        post.Text = text;
+        repository.UpdatePost(post);
+
+        if (await repository.Complete()) return Ok();
+
+        return BadRequest("Failed to update Post");
     }
 }
