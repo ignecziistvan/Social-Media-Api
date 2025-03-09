@@ -1,5 +1,6 @@
 using API.Dtos.Response;
 using API.Entities;
+using API.Extensions;
 using API.Interfaces;
 using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
@@ -8,15 +9,14 @@ using Microsoft.AspNetCore.Mvc;
 namespace API.Controllers;
 
 public class CommentController(ICommentRepository commentRepository, 
-    IPostRepository postRepository, IUserRepository userRepository, 
-    IMapper mapper) : BaseApiController
+    IPostRepository postRepository, IUserRepository userRepository, IMapper mapper) : BaseApiController
 {
     [HttpGet("{id}")]
     public async Task<ActionResult<CommentDto>> GetCommentById(int id)
     {
-        CommentDto? comment = await commentRepository.GetCommentById(id);
+        Comment? comment = await commentRepository.GetCommentById(id);
 
-        if (comment == null) return NotFound("Comment was nor found");
+        if (comment == null) return NotFound("Comment was not found");
 
         return mapper.Map<CommentDto>(comment);
     }
@@ -24,7 +24,7 @@ public class CommentController(ICommentRepository commentRepository,
     [HttpGet("post/{postId}")]
     public async Task<ActionResult<List<CommentDto>>> GetCommentsOfPost(int postId)
     {
-        PostDto? post = await postRepository.GetPost(postId);
+        Post? post = await postRepository.GetPost(postId);
         if (post == null) return NotFound("Post was not found");
 
         return await commentRepository.GetCommentsOfPost(postId);
@@ -41,23 +41,19 @@ public class CommentController(ICommentRepository commentRepository,
 
     [Authorize]
     [HttpPost("post/{postId}")]
-    public async Task<ActionResult<PostDto>> AddCommentToPost([FromRoute] int postId, [FromBody] string text)
+    public async Task<ActionResult> AddCommentToPost(int postId, [FromBody] string text)
     {
         if (text == null || text == string.Empty) return BadRequest("Provide a text");
         
-        string? userName = User.Identity?.Name;
-        if (userName == null) return Forbid("No identity");
+        int userId = User.GetUserId();
 
-        User? user = await userRepository.GetUserByUserNameAsNonDto(userName);
-        if (user == null) return NotFound("User was not found");
-
-        PostDto? post = await postRepository.GetPost(postId);
+        Post? post = await postRepository.GetPost(postId);
         if (post == null) return NotFound("Post was not found");
 
         commentRepository.AddComment(
             new Comment 
             {
-                UserId = user.Id,
+                UserId = userId,
                 PostId = post.Id,
                 Text = text
             }
@@ -65,6 +61,45 @@ public class CommentController(ICommentRepository commentRepository,
         
         if (await commentRepository.Complete()) return Ok();
 
-        return BadRequest("Failed to create Post");
+        return BadRequest("Failed to create Comment");
+    }
+
+    [Authorize]
+    [HttpDelete("{id}")]
+    public async Task<ActionResult> DeleteComment(int id)
+    {
+        int userId = User.GetUserId();
+
+        Comment? comment = await commentRepository.GetCommentById(id);
+        if (comment == null) return NotFound("Comment was not found");
+
+        if (comment.UserId != userId) return BadRequest("Cannot delete someone elses comment");
+
+        commentRepository.DeleteComment(comment);
+        
+        if (await commentRepository.Complete()) return Ok();
+
+        return BadRequest("Failed to delete Comment");
+    }
+
+    [Authorize]
+    [HttpPut("{id}")]
+    public async Task<ActionResult> UpdateComment(int id, [FromBody] string text)
+    {
+        if (text == null || text == string.Empty) return BadRequest("You must provide a text");
+
+        int userId = User.GetUserId();
+
+        Comment? comment = await commentRepository.GetCommentById(id);
+        if (comment == null) return NotFound("Comment was not found");
+
+        if (comment.UserId != userId) return BadRequest("Cannot update someone elses comment");
+
+        comment.Text = text;
+        commentRepository.UpdateComment(comment);
+        
+        if (await commentRepository.Complete()) return Ok();
+
+        return BadRequest("Failed to update Comment");
     }
 }

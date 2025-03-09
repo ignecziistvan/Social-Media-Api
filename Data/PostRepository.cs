@@ -19,11 +19,10 @@ public class PostRepository(DataContext context, IMapper mapper) : IPostReposito
             .ToListAsync();
     }
 
-    public async Task<PostDto?> GetPost(int id)
+    public async Task<Post?> GetPost(int id)
     {
         return await context.Posts
             .Where(p => p.Id == id)
-            .ProjectTo<PostDto>(mapper.ConfigurationProvider)
             .SingleOrDefaultAsync();
     }
 
@@ -38,6 +37,16 @@ public class PostRepository(DataContext context, IMapper mapper) : IPostReposito
     public void CreatePost(Post post)
     {
         context.Posts.Add(post);
+    }
+
+    public void DeletePost(Post post)
+    {
+        context.Posts.Remove(post);
+    }
+
+    public void UpdatePost(Post post)
+    {
+        context.Entry(post).State = EntityState.Modified;
     }
 
     public async Task<bool> Complete()
