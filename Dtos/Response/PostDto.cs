@@ -8,7 +8,5 @@ public class PostDto
 
     
     public required string Text { get; set; }
-    public required List<CommentDto> Comments { get; set; }
-    public required List<LikeDto> LikedByUsers { get; set; }
     public required DateTime Created { get; set; }
 }

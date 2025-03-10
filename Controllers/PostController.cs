@@ -39,10 +39,10 @@ public class PostController(IPostRepository repository, IUserRepository userRepo
         [FromQuery] PaginationParams paginationParams
     ) 
     {
-        User? user = await userRepository.GetUserByUserNameAsNonDto(userName);
+        User? user = await userRepository.GetUserByUsername(userName);
         if (user == null) return NotFound("User was not found");
 
-        var posts = await repository.GetPostsOfUser(user, paginationParams);
+        var posts = await repository.GetPostsOfUser(user.Id, paginationParams);
 
         Response.AddPaginationHeader(posts);
         

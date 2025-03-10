@@ -1,5 +1,6 @@
 using API.Dtos.Response;
 using API.Entities;
+using API.Helpers;
 using API.Interfaces;
 using AutoMapper;
 using AutoMapper.QueryableExtensions;
@@ -14,30 +15,26 @@ public class UserRepository(DataContext context, IMapper mapper) : IUserReposito
         return await context.SaveChangesAsync() > 0;
     }
 
-    public async Task<IEnumerable<UserDto>> GetAllUsers()
+    public async Task<PaginatedList<UserDto>> GetAllUsers(PaginationParams paginationParams)
     {
-        return await context.Users
+        var users = context.Users
             .ProjectTo<UserDto>(mapper.ConfigurationProvider)
-            .ToListAsync();
+            .AsQueryable();
+
+        return await PaginatedList<UserDto>.CreateAsync(
+            users, paginationParams.PageNumber, paginationParams.PageSize
+        );
     }
 
-    public async Task<UserDto?> GetUser(string username)
+    public async Task<User?> GetUserByUsername(string username)
     {
         return await context.Users
-            .Where(user => user.UserName == username)
-            .ProjectTo<UserDto>(mapper.ConfigurationProvider)
+            .Where(user => user.NormalizedUserName == username.ToUpper())
             .SingleOrDefaultAsync();
     }
 
-    public async Task<User?> GetUserByIdAsNonDto(int id)
+    public async Task<User?> GetUserById(int id)
     {
         return await context.Users.FindAsync(id);
-    }
-
-    public async Task<User?> GetUserByUserNameAsNonDto(string username)
-    {
-        return await context.Users
-            .Where(user => user.UserName == username)
-            .SingleOrDefaultAsync();
     }
 }

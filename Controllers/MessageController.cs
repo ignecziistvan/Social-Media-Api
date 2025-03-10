@@ -21,8 +21,8 @@ public class MessageController(IMessageRepository messageRepository,
         if (username == dto.ReceiverUsername.ToLower())
             return BadRequest("You cannot message yourself");
         
-        var sender = await userRepository.GetUserByUserNameAsNonDto(username);
-        var receiver = await userRepository.GetUserByUserNameAsNonDto(dto.ReceiverUsername);
+        var sender = await userRepository.GetUserByUsername(username);
+        var receiver = await userRepository.GetUserByUsername(dto.ReceiverUsername);
 
         if (receiver == null || sender == null || sender.UserName == null || receiver.UserName == null) 
             return BadRequest("Cannot send message");

@@ -40,7 +40,7 @@ public class CommentController(ICommentRepository commentRepository,
         [FromQuery] PaginationParams paginationParams
     )
     {
-        User? user = await userRepository.GetUserByUserNameAsNonDto(username);
+        User? user = await userRepository.GetUserByUsername(username);
         if (user == null) return NotFound("User was not found");
 
         return await commentRepository.GetCommentsOfUser(user, paginationParams);

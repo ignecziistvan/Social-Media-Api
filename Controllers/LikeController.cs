@@ -32,7 +32,7 @@ public class LikeController(ILikeRepository likeRepository, IPostRepository post
     [HttpGet("user/{username}")]
     public async Task<ActionResult<List<LikeDto>>> GetLikesOfUser(string username)
     {
-        User? user = await userRepository.GetUserByUserNameAsNonDto(username);
+        User? user = await userRepository.GetUserByUsername(username);
         if (user == null) return NotFound("User was not found by ID");
 
         return Ok(mapper.Map<List<LikeDto>>(await likeRepository.GetLikesOfUser(user)));

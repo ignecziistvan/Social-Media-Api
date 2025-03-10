@@ -27,10 +27,10 @@ public class PostRepository(DataContext context, IMapper mapper) : IPostReposito
         return await context.Posts.FindAsync(id);
     }
 
-    public async Task<PaginatedList<PostDto>> GetPostsOfUser(User user, PaginationParams paginationParams)
+    public async Task<PaginatedList<PostDto>> GetPostsOfUser(int userId, PaginationParams paginationParams)
     {
         var posts = context.Posts
-            .Where(p => p.User == user)
+            .Where(p => p.UserId == userId)
             .OrderByDescending(p => p.Created)
             .ProjectTo<PostDto>(mapper.ConfigurationProvider)
             .AsQueryable();
