@@ -26,9 +26,7 @@ public class CommentRepository(DataContext context, IMapper mapper) : ICommentRe
 
     public async Task<Comment?> GetCommentById(int id)
     {
-        return await context.Comments
-            .Where(c => c.Id == id)
-            .FirstOrDefaultAsync();
+        return await context.Comments.FindAsync(id);
     }
 
     public async Task<List<CommentDto>> GetCommentsOfPost(int postId)

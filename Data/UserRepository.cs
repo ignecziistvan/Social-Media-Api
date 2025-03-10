@@ -31,9 +31,7 @@ public class UserRepository(DataContext context, IMapper mapper) : IUserReposito
 
     public async Task<User?> GetUserByIdAsNonDto(int id)
     {
-        return await context.Users
-            .Where(user => user.Id == id)
-            .SingleOrDefaultAsync();
+        return await context.Users.FindAsync(id);
     }
 
     public async Task<User?> GetUserByUserNameAsNonDto(string username)

@@ -8,9 +8,7 @@ public class LikeRepository(DataContext context) : ILikeRepository
 {
     public async Task<Like?> GetLikeById(int id)
     {
-        return await context.PostLikes
-            .Where(l => l.Id == id)
-            .SingleOrDefaultAsync();
+        return await context.PostLikes.FindAsync(id);
     }
 
     public async Task<List<Like>> GetLikesOfPostById(int postId)

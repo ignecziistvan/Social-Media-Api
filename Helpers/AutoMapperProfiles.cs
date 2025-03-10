@@ -18,6 +18,7 @@ public class AutoMapperProfiles : Profile
         CreateMap<Comment, CommentDto>()
             .ForMember(d => d.UserName, o => o.MapFrom(s => s.User.UserName));
         CreateMap<Like, LikeDto>();
+        CreateMap<Message, MessageDto>();
         CreateMap<DateTime, DateTime>()
             .ConvertUsing(d => DateTime.SpecifyKind(d, DateTimeKind.Utc));
         CreateMap<DateTime?, DateTime?>().ConvertUsing(d => d.HasValue 
