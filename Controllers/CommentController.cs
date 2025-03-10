@@ -1,6 +1,7 @@
 using API.Dtos.Response;
 using API.Entities;
 using API.Extensions;
+using API.Helpers;
 using API.Interfaces;
 using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
@@ -22,21 +23,27 @@ public class CommentController(ICommentRepository commentRepository,
     }
 
     [HttpGet("post/{postId}")]
-    public async Task<ActionResult<List<CommentDto>>> GetCommentsOfPost(int postId)
+    public async Task<ActionResult<List<CommentDto>>> GetCommentsOfPost(
+        int postId, 
+        [FromQuery] PaginationParams paginationParams
+    )
     {
         Post? post = await postRepository.GetPost(postId);
         if (post == null) return NotFound("Post was not found");
 
-        return await commentRepository.GetCommentsOfPost(postId);
+        return await commentRepository.GetCommentsOfPost(postId, paginationParams);
     }
 
     [HttpGet("user/{username}")]
-    public async Task<ActionResult<List<CommentDto>>> GetCommentsOfUser(string username)
+    public async Task<ActionResult<List<CommentDto>>> GetCommentsOfUser(
+        string username, 
+        [FromQuery] PaginationParams paginationParams
+    )
     {
-        User? user = await userRepository.GetUserByUserNameAsNonDto(username);
+        User? user = await userRepository.GetUserByUsername(username);
         if (user == null) return NotFound("User was not found");
 
-        return await commentRepository.GetCommentsOfUser(user);
+        return await commentRepository.GetCommentsOfUser(user, paginationParams);
     }
 
     [Authorize]

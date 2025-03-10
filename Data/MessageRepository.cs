@@ -25,31 +25,33 @@ public class MessageRepository(DataContext context, IMapper mapper) : IMessageRe
         return await context.Messages.FindAsync(id);
     }
 
-    public async Task<List<MessageDto>> GetMessagesForUser(string username, string? container)
+    public async Task<PaginatedList<MessageDto>> GetMessagesForUser(MessageParams messageParams)
     {
         IQueryable<Message>? query = context.Messages
-            .OrderByDescending(m => m.MessageSent)
+            .OrderByDescending(m => m.Created)
             .AsQueryable();
 
-        query = container switch
+        query = messageParams.Container switch
         {
             "Inbox" => query.Where(m => 
-                    m.ReceiverUsername == username
+                    m.ReceiverUsername == messageParams.Username
                     && !m.ReceiverDeleted
                 ),
             "Outbox" => query.Where(m => 
-                    m.SenderUsername == username
+                    m.SenderUsername == messageParams.Username
                     && !m.SenderDeleted
                 ),
             _ => query.Where(m => 
-                    m.ReceiverUsername == username && m.DateRead == null
+                    m.ReceiverUsername == messageParams.Username && m.DateRead == null
                     && !m.ReceiverDeleted
                 )
         };
 
         IQueryable<MessageDto>? messages = query.ProjectTo<MessageDto>(mapper.ConfigurationProvider);
 
-        return await messages.ToListAsync();
+        return await PaginatedList<MessageDto>.CreateAsync(
+            messages, messageParams.PageNumber, messageParams.PageSize
+        );
     }
 
     public async Task<List<MessageDto>> GetMessageThread(string currentUsername, string receiverUsername)
@@ -59,7 +61,7 @@ public class MessageRepository(DataContext context, IMapper mapper) : IMessageRe
                 m.ReceiverUsername == currentUsername && !m.ReceiverDeleted && m.SenderUsername == receiverUsername ||
                 m.SenderUsername == currentUsername && !m.SenderDeleted && m.ReceiverUsername == receiverUsername
             )
-            .OrderBy(m => m.MessageSent)
+            .OrderBy(m => m.Created)
             .AsQueryable();
 
         List<Message>? unreadMessages = query

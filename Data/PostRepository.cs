@@ -1,5 +1,6 @@
 using API.Dtos.Response;
 using API.Entities;
+using API.Helpers;
 using API.Interfaces;
 using AutoMapper;
 using AutoMapper.QueryableExtensions;
@@ -9,14 +10,16 @@ namespace API.Data;
 
 public class PostRepository(DataContext context, IMapper mapper) : IPostRepository
 {
-    private readonly int DefaultCount = 20;
-    
-    public async Task<IEnumerable<PostDto>> GetLatestPosts(int? count)
+    public async Task<PaginatedList<PostDto>> GetLatestPosts(PaginationParams paginationParams)
     {
-        return await context.Posts
-            .Take(count ?? DefaultCount)
+        IQueryable<PostDto> posts = context.Posts
+            .OrderByDescending(p => p.Created)
             .ProjectTo<PostDto>(mapper.ConfigurationProvider)
-            .ToListAsync();
+            .AsQueryable();
+
+        return await PaginatedList<PostDto>.CreateAsync(
+            posts, paginationParams.PageNumber, paginationParams.PageSize
+        );
     }
 
     public async Task<Post?> GetPost(int id)
@@ -24,12 +27,17 @@ public class PostRepository(DataContext context, IMapper mapper) : IPostReposito
         return await context.Posts.FindAsync(id);
     }
 
-    public async Task<IEnumerable<PostDto>> GetPostsOfUser(User user)
+    public async Task<PaginatedList<PostDto>> GetPostsOfUser(int userId, PaginationParams paginationParams)
     {
-        return await context.Posts
-            .Where(p => p.User == user)
+        var posts = context.Posts
+            .Where(p => p.UserId == userId)
+            .OrderByDescending(p => p.Created)
             .ProjectTo<PostDto>(mapper.ConfigurationProvider)
-            .ToListAsync();
+            .AsQueryable();
+
+        return await PaginatedList<PostDto>.CreateAsync(
+            posts, paginationParams.PageNumber, paginationParams.PageSize
+        );
     }
 
     public void CreatePost(Post post)

@@ -1,5 +1,6 @@
 using API.Dtos.Response;
 using API.Entities;
+using API.Helpers;
 using API.Interfaces;
 using AutoMapper;
 using AutoMapper.QueryableExtensions;
@@ -29,20 +30,30 @@ public class CommentRepository(DataContext context, IMapper mapper) : ICommentRe
         return await context.Comments.FindAsync(id);
     }
 
-    public async Task<List<CommentDto>> GetCommentsOfPost(int postId)
+    public async Task<PaginatedList<CommentDto>> GetCommentsOfPost(int postId, PaginationParams paginationParams)
     {
-        return await context.Comments
+        var comments = context.Comments
             .Where(c => c.PostId == postId)
+            .OrderByDescending(c => c.Created)
             .ProjectTo<CommentDto>(mapper.ConfigurationProvider)
-            .ToListAsync();
+            .AsQueryable();
+
+        return await PaginatedList<CommentDto>.CreateAsync(
+            comments, paginationParams.PageNumber, paginationParams.PageSize
+        );
     }
 
-    public async Task<List<CommentDto>> GetCommentsOfUser(User user)
+    public async Task<PaginatedList<CommentDto>> GetCommentsOfUser(User user, PaginationParams paginationParams)
     {
-        return await context.Comments
+        var comments = context.Comments
             .Where(c => c.User == user)
+            .OrderByDescending(c => c.Created)
             .ProjectTo<CommentDto>(mapper.ConfigurationProvider)
-            .ToListAsync();
+            .AsQueryable();;
+
+        return await PaginatedList<CommentDto>.CreateAsync(
+            comments, paginationParams.PageNumber, paginationParams.PageSize
+        );
     }
 
     public async Task<bool> Complete()

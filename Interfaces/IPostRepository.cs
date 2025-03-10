@@ -1,12 +1,13 @@
 using API.Dtos.Response;
 using API.Entities;
+using API.Helpers;
 
 namespace API.Interfaces;
 
 public interface IPostRepository
 {
-    Task<IEnumerable<PostDto>> GetLatestPosts(int? count);
-    Task<IEnumerable<PostDto>> GetPostsOfUser(User user);
+    Task<PaginatedList<PostDto>> GetLatestPosts(PaginationParams paginationParams);
+    Task<PaginatedList<PostDto>> GetPostsOfUser(int userId, PaginationParams paginationParams);
     Task<Post?> GetPost(int id);
     void CreatePost(Post post);
     void DeletePost(Post post);
