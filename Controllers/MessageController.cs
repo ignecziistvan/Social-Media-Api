@@ -46,12 +46,16 @@ public class MessageController(IMessageRepository messageRepository,
     [Authorize]
     [HttpGet]
     public async Task<ActionResult<List<MessageDto>>> GetMessagesForUser(
-        [FromQuery] string? container
+        [FromQuery] MessageParams messageParams
     )
     {
-        List<MessageDto> messages = await messageRepository.GetMessagesForUser(User.GetUsername(), container);
+        messageParams.Username = User.GetUsername();
 
-        return messages;
+        var messages = await messageRepository.GetMessagesForUser(messageParams);
+
+        Response.AddPaginationHeader(messages);
+
+        return Ok(messages);
     }
 
     [Authorize]

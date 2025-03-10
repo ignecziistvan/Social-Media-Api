@@ -7,7 +7,7 @@ public class Message
     public required string ReceiverUsername { get; set; }
     public required string Text { get; set; }
     public DateTime? DateRead { get; set; }
-    public DateTime MessageSent { get; set; } = DateTime.UtcNow;
+    public DateTime Created { get; set; } = DateTime.UtcNow;
     public bool SenderDeleted { get; set; }
     public bool ReceiverDeleted { get; set; }
     

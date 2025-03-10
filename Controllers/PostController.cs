@@ -1,6 +1,7 @@
 using API.Dtos.Response;
 using API.Entities;
 using API.Extensions;
+using API.Helpers;
 using API.Interfaces;
 using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
@@ -11,9 +12,15 @@ namespace API.Controllers;
 public class PostController(IPostRepository repository, IUserRepository userRepository, IMapper mapper) : BaseApiController
 {
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<PostDto>>> GetLatestPosts([FromQuery] int? count) 
+    public async Task<ActionResult<IEnumerable<PostDto>>> GetLatestPosts(
+        [FromQuery] PaginationParams paginationParams
+    ) 
     {
-        return Ok(await repository.GetLatestPosts(count));
+        var posts = await repository.GetLatestPosts(paginationParams);
+
+        Response.AddPaginationHeader(posts);
+
+        return Ok(posts);
     }
 
     [HttpGet("{id}")]
@@ -27,13 +34,19 @@ public class PostController(IPostRepository repository, IUserRepository userRepo
     }
 
     [HttpGet("user/{username}")]
-    public async Task<ActionResult<IEnumerable<PostDto>>> GetPostsOfUser(string userName) 
+    public async Task<ActionResult<IEnumerable<PostDto>>> GetPostsOfUser(
+        string userName, 
+        [FromQuery] PaginationParams paginationParams
+    ) 
     {
         User? user = await userRepository.GetUserByUserNameAsNonDto(userName);
-
         if (user == null) return NotFound("User was not found");
 
-        return Ok(await repository.GetPostsOfUser(user));
+        var posts = await repository.GetPostsOfUser(user, paginationParams);
+
+        Response.AddPaginationHeader(posts);
+        
+        return Ok(posts);
     }
 
     [Authorize]

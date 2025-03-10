@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace API.Migrations
 {
     /// <inheritdoc />
-    public partial class MessagessAdded : Migration
+    public partial class MessagesAdded : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -21,7 +21,7 @@ namespace API.Migrations
                     ReceiverUsername = table.Column<string>(type: "TEXT", nullable: false),
                     Text = table.Column<string>(type: "TEXT", nullable: false),
                     DateRead = table.Column<DateTime>(type: "TEXT", nullable: true),
-                    MessageSent = table.Column<DateTime>(type: "TEXT", nullable: false),
+                    Created = table.Column<DateTime>(type: "TEXT", nullable: false),
                     SenderDeleted = table.Column<bool>(type: "INTEGER", nullable: false),
                     ReceiverDeleted = table.Column<bool>(type: "INTEGER", nullable: false),
                     SenderId = table.Column<int>(type: "INTEGER", nullable: false),
