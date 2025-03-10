@@ -13,6 +13,7 @@ public class DataContext(DbContextOptions options) : IdentityDbContext<User, Rol
     public DbSet<Post> Posts { get; set; }
     public DbSet<Comment> Comments { get; set; }
     public DbSet<Like> PostLikes { get; set; }
+    public DbSet<Message> Messages { get; set; }
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -59,5 +60,15 @@ public class DataContext(DbContextOptions options) : IdentityDbContext<User, Rol
             .WithMany(p => p.LikedByUsers)
             .HasForeignKey(l => l.PostId)
             .OnDelete(DeleteBehavior.Cascade);
+
+        builder.Entity<Message>()
+            .HasOne(m => m.Receiver)
+            .WithMany(u => u.MessagesReceived)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Entity<Message>()
+            .HasOne(m => m.Sender)
+            .WithMany(u => u.MessagesSent)
+            .OnDelete(DeleteBehavior.Restrict);
     }
 }

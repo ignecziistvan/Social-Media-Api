@@ -21,9 +21,7 @@ public class PostRepository(DataContext context, IMapper mapper) : IPostReposito
 
     public async Task<Post?> GetPost(int id)
     {
-        return await context.Posts
-            .Where(p => p.Id == id)
-            .SingleOrDefaultAsync();
+        return await context.Posts.FindAsync(id);
     }
 
     public async Task<IEnumerable<PostDto>> GetPostsOfUser(User user)
