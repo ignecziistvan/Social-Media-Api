@@ -9,4 +9,7 @@ public class PostDto
     
     public required string Text { get; set; }
     public required DateTime Created { get; set; }
+
+    public required List<LikeDto> Likes { get; set; }
+    public required int CommentCount { get; set; }
 }

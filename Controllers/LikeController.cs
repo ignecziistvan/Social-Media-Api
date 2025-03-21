@@ -11,15 +11,6 @@ namespace API.Controllers;
 public class LikeController(ILikeRepository likeRepository, IPostRepository postRepository, 
     IUserRepository userRepository, IMapper mapper) : BaseApiController
 {
-    [HttpGet("{id}")]
-    public async Task<ActionResult<LikeDto>> GetLikeById(int id)
-    {
-        Like? like = await likeRepository.GetLikeById(id);
-        if (like == null) return NotFound("Like was not found by ID");
-
-        return Ok(mapper.Map<LikeDto>(like));
-    }
-
     [HttpGet("post/{postId}")]
     public async Task<ActionResult<List<LikeDto>>> GetLikesOfPost(int postId)
     {
@@ -40,7 +31,7 @@ public class LikeController(ILikeRepository likeRepository, IPostRepository post
 
     [Authorize]
     [HttpPost("post/{postId}")]
-    public async Task<ActionResult<bool>> LikePost(int postId)
+    public async Task<ActionResult<LikeDto>> LikePost(int postId)
     {
         int userId = User.GetUserId();
         string username = User.GetUsername();
@@ -48,22 +39,22 @@ public class LikeController(ILikeRepository likeRepository, IPostRepository post
         Post? post = await postRepository.GetPost(postId);
         if (post == null) return NotFound("Post was not found by ID");
 
-        Like? like = await likeRepository.GetSingleLikeByUserIdAndPostId(userId, postId);
-        if (like != null) 
+        Like? existingLike = await likeRepository.GetSingleLikeByUserIdAndPostId(userId, postId);
+        if (existingLike != null) 
             return BadRequest("You have already liked this Post");
 
-        likeRepository.LikePost(
-            new Like
-            {
-                UserId = userId,
-                PostId = postId,
-                UserName = username
-            }
-        );
+        Like newLike = new() 
+        {
+            UserId = userId,
+            PostId = postId,
+            UserName = username 
+        };
 
-        if (await likeRepository.Complete()) return Ok();
+        likeRepository.LikePost(newLike);
 
-        return BadRequest("Could not like Post for some reason");
+        if (!await likeRepository.Complete()) return BadRequest("Could not like Post for some reason");
+
+        return Ok(mapper.Map<LikeDto>(newLike));
     }
 
     [Authorize]
@@ -81,8 +72,8 @@ public class LikeController(ILikeRepository likeRepository, IPostRepository post
 
         likeRepository.UnlikePost(like);
 
-        if (await likeRepository.Complete()) return Ok();
+        if (!await likeRepository.Complete()) return BadRequest("Could not like Post for some reason");
 
-        return BadRequest("Could not like Post for some reason");
+        return Ok();
     }
 }

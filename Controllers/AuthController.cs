@@ -40,7 +40,7 @@ public class AuthController(UserManager<User> userManager, ITokenService tokenSe
         AccountDto accountDto = mapper.Map<AccountDto>(user);
         accountDto.Token = token;
 
-        return accountDto;
+        return Ok(accountDto);
     }
 
     [HttpPost("register")]
@@ -65,7 +65,7 @@ public class AuthController(UserManager<User> userManager, ITokenService tokenSe
         AccountDto accountDto = mapper.Map<AccountDto>(user);
         accountDto.Token = token;
 
-        return accountDto;
+        return Ok(accountDto);
     }
 
     private async Task<bool> UsernameExists(string username)

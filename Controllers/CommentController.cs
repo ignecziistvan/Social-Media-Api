@@ -1,3 +1,4 @@
+using API.Dtos.Request;
 using API.Dtos.Response;
 using API.Entities;
 using API.Extensions;
@@ -19,7 +20,7 @@ public class CommentController(ICommentRepository commentRepository,
 
         if (comment == null) return NotFound("Comment was not found");
 
-        return mapper.Map<CommentDto>(comment);
+        return Ok(mapper.Map<CommentDto>(comment));
     }
 
     [HttpGet("post/{postId}")]
@@ -31,7 +32,7 @@ public class CommentController(ICommentRepository commentRepository,
         Post? post = await postRepository.GetPost(postId);
         if (post == null) return NotFound("Post was not found");
 
-        return await commentRepository.GetCommentsOfPost(postId, paginationParams);
+        return Ok(await commentRepository.GetCommentsOfPost(postId, paginationParams));
     }
 
     [HttpGet("user/{username}")]
@@ -43,32 +44,34 @@ public class CommentController(ICommentRepository commentRepository,
         User? user = await userRepository.GetUserByUsername(username);
         if (user == null) return NotFound("User was not found");
 
-        return await commentRepository.GetCommentsOfUser(user, paginationParams);
+        return Ok(await commentRepository.GetCommentsOfUser(user, paginationParams));
     }
 
     [Authorize]
     [HttpPost("post/{postId}")]
-    public async Task<ActionResult> AddCommentToPost(int postId, [FromBody] string text)
+    public async Task<ActionResult<CommentDto>> AddCommentToPost(int postId, CreateCommentDto dto)
     {
-        if (text == null || text == string.Empty) return BadRequest("Provide a text");
+        if (dto.Text == null || dto.Text == string.Empty) return BadRequest("Provide a text");
         
         int userId = User.GetUserId();
 
         Post? post = await postRepository.GetPost(postId);
         if (post == null) return NotFound("Post was not found");
 
-        commentRepository.AddComment(
-            new Comment 
-            {
-                UserId = userId,
-                PostId = post.Id,
-                Text = text
-            }
-        );
+        Comment comment = new() 
+        {
+            UserId = userId,
+            PostId = post.Id,
+            Text = dto.Text
+        };
+        commentRepository.AddComment(comment);
         
-        if (await commentRepository.Complete()) return Ok();
+        if (!await commentRepository.Complete()) return BadRequest("Failed to create Comment");
 
-        return BadRequest("Failed to create Comment");
+        CommentDto commentDto = mapper.Map<CommentDto>(comment);
+        commentDto.UserName = User.GetUsername();
+
+        return Ok(commentDto);
     }
 
     [Authorize]
@@ -84,16 +87,16 @@ public class CommentController(ICommentRepository commentRepository,
 
         commentRepository.DeleteComment(comment);
         
-        if (await commentRepository.Complete()) return Ok();
+        if (!await commentRepository.Complete()) return BadRequest("Failed to delete Comment");
 
-        return BadRequest("Failed to delete Comment");
+        return Ok();
     }
 
     [Authorize]
     [HttpPut("{id}")]
-    public async Task<ActionResult> UpdateComment(int id, [FromBody] string text)
+    public async Task<ActionResult<CommentDto>> UpdateComment(int id, UpdateCommentDto dto)
     {
-        if (text == null || text == string.Empty) return BadRequest("You must provide a text");
+        if (dto.Text == null || dto.Text == string.Empty) return BadRequest("You must provide a text");
 
         int userId = User.GetUserId();
 
@@ -102,11 +105,11 @@ public class CommentController(ICommentRepository commentRepository,
 
         if (comment.UserId != userId) return BadRequest("Cannot update someone elses comment");
 
-        comment.Text = text;
+        comment.Text = dto.Text;
         commentRepository.UpdateComment(comment);
         
-        if (await commentRepository.Complete()) return Ok();
+        if (!await commentRepository.Complete()) return BadRequest("Failed to update Comment");
 
-        return BadRequest("Failed to update Comment");
+        return Ok(mapper.Map<CommentDto>(comment));
     }
 }

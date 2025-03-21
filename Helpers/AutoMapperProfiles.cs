@@ -14,7 +14,9 @@ public class AutoMapperProfiles : Profile
         CreateMap<User, AccountDto>();
         CreateMap<string, DateOnly>().ConvertUsing(s => DateOnly.Parse(s));
         CreateMap<Post, PostDto>()
-            .ForMember(d => d.UserName, o => o.MapFrom(s => s.User.UserName));
+            .ForMember(d => d.UserName, o => o.MapFrom(s => s.User.UserName))
+            .ForMember(d => d.Likes, o => o.MapFrom(s => s.LikedByUsers))
+            .ForMember(d => d.CommentCount, o => o.MapFrom(s => s.Comments.Count));
         CreateMap<Comment, CommentDto>()
             .ForMember(d => d.UserName, o => o.MapFrom(s => s.User.UserName));
         CreateMap<Like, LikeDto>();

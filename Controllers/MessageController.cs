@@ -38,9 +38,9 @@ public class MessageController(IMessageRepository messageRepository,
 
         messageRepository.AddMessage(message);
 
-        if (await messageRepository.Complete()) return Ok(mapper.Map<MessageDto>(message));
+        if (!await messageRepository.Complete()) return BadRequest("Failed to save message");
 
-        return BadRequest("Failed to save message");
+        return Ok(mapper.Map<MessageDto>(message));
     }
 
     [Authorize]
@@ -87,8 +87,8 @@ public class MessageController(IMessageRepository messageRepository,
             messageRepository.DeleteMessage(message);
         }
 
-        if (await messageRepository.Complete()) return Ok();
+        if (!await messageRepository.Complete()) return BadRequest("Failed to delete message");
 
-        return BadRequest("Failed to delete message");
+        return Ok();
     }
 }

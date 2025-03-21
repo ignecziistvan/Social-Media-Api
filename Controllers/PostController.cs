@@ -1,3 +1,4 @@
+using API.Dtos.Request;
 using API.Dtos.Response;
 using API.Entities;
 using API.Extensions;
@@ -51,21 +52,24 @@ public class PostController(IPostRepository repository, IUserRepository userRepo
 
     [Authorize]
     [HttpPost]
-    public async Task<ActionResult> CreatePost([FromBody] string text)
+    public async Task<ActionResult<PostDto>> CreatePost(CreatePostDto dto)
     {
         int userId = User.GetUserId();
 
-        repository.CreatePost(
-            new Post
-            {
-                UserId = userId,
-                Text = text
-            }
-        );
-        
-        if (await repository.Complete()) return Ok();
+        Post newPost = new()
+        {
+            UserId = userId,
+            Text = dto.Text
+        };
 
-        return BadRequest("Failed to create Post");
+        repository.CreatePost(newPost);
+        
+        if (!await repository.Complete()) return BadRequest("Failed to create Post");
+
+        PostDto postDto = mapper.Map<PostDto>(newPost);
+        postDto.UserName = User.GetUsername();
+
+        return Ok(postDto);        
     }
 
     [Authorize]
@@ -81,16 +85,16 @@ public class PostController(IPostRepository repository, IUserRepository userRepo
 
         repository.DeletePost(post);
 
-        if (await repository.Complete()) return Ok();
+        if (!await repository.Complete()) return BadRequest("Failed to delete Post");
 
-        return BadRequest("Failed to delete Post");
+        return Ok();
     }
 
     [Authorize]
     [HttpPut("{id}")]
-    public async Task<ActionResult> UpdatePost(int id, [FromBody] string text)
+    public async Task<ActionResult<PostDto>> UpdatePost(int id, UpdatePostDto dto)
     {
-        if (text == null || text == string.Empty) return BadRequest("You must provide a text");
+        if (dto.Text == null || dto.Text == string.Empty) return BadRequest("You must provide a text");
 
         int userId = User.GetUserId();
 
@@ -99,11 +103,11 @@ public class PostController(IPostRepository repository, IUserRepository userRepo
 
         if (post.UserId != userId) return BadRequest("Cannot update someone elses post");
 
-        post.Text = text;
+        post.Text = dto.Text;
         repository.UpdatePost(post);
 
-        if (await repository.Complete()) return Ok();
+        if (!await repository.Complete()) return BadRequest("Failed to update Post");
 
-        return BadRequest("Failed to update Post");
+        return Ok(mapper.Map<PostDto>(post));
     }
 }
