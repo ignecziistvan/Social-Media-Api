@@ -7,5 +7,6 @@ public class AccountDto
     public required string Email { get; set; }
     public required string Firstname { get; set; }
     public required string Lastname { get; set; }
+    public required DateOnly DateOfBirth { get; set; }
     public string? Token { get; set; }
 }

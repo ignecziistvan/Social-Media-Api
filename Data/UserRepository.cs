@@ -33,8 +33,25 @@ public class UserRepository(DataContext context, IMapper mapper) : IUserReposito
             .SingleOrDefaultAsync();
     }
 
+    public async Task<User?> GetUserByEmail(string email)
+    {
+        return await context.Users
+            .Where(u => u.NormalizedEmail == email.ToUpper())
+            .FirstOrDefaultAsync();
+    }
+
     public async Task<User?> GetUserById(int id)
     {
         return await context.Users.FindAsync(id);
+    }
+
+    public void UpdateUser(User user)
+    {
+        context.Entry(user).State = EntityState.Modified;
+    }
+
+    public void DeleteUser(User user)
+    {
+        context.Users.Remove(user);
     }
 }
