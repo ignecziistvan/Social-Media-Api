@@ -4,13 +4,15 @@ using API.Entities;
 using API.Extensions;
 using API.Helpers;
 using API.Interfaces;
+using API.Services;
 using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers;
 
-public class PostController(IPostRepository repository, IUserRepository userRepository, IMapper mapper) : BaseApiController
+public class PostController(IPostRepository repository, IUserRepository userRepository, 
+    IPhotoService photoService, IMapper mapper) : BaseApiController
 {
     [HttpGet]
     public async Task<ActionResult<IEnumerable<PostDto>>> GetLatestPosts(
@@ -56,11 +58,26 @@ public class PostController(IPostRepository repository, IUserRepository userRepo
     {
         int userId = User.GetUserId();
 
+        if (dto.Files.Length > 10) return BadRequest("You cannot add more than 10 photos to your post");
+
         Post newPost = new()
         {
             UserId = userId,
-            Text = dto.Text
+            Text = dto.Text,
+            Photos = []
         };
+
+        foreach (var file in dto.Files)
+        {
+            var result = await photoService.AddPhoto(file);
+            if (result.Error != null) return BadRequest(result.Error.Message);
+
+            newPost.Photos.Add(new Photo
+            {
+                Url = result.SecureUrl.AbsoluteUri,
+                PublicId = result.PublicId
+            });
+        }
 
         repository.CreatePost(newPost);
         

@@ -18,6 +18,7 @@ public class UserRepository(DataContext context, IMapper mapper) : IUserReposito
     public async Task<PaginatedList<UserDto>> GetAllUsers(PaginationParams paginationParams)
     {
         var users = context.Users
+            .Include(u => u.Photos)
             .ProjectTo<UserDto>(mapper.ConfigurationProvider)
             .AsQueryable();
 
@@ -29,7 +30,8 @@ public class UserRepository(DataContext context, IMapper mapper) : IUserReposito
     public async Task<User?> GetUserByUsername(string username)
     {
         return await context.Users
-            .Where(user => user.NormalizedUserName == username.ToUpper())
+            .Where(u => u.NormalizedUserName == username.ToUpper())
+            .Include(u => u.Photos)
             .SingleOrDefaultAsync();
     }
 
@@ -37,12 +39,15 @@ public class UserRepository(DataContext context, IMapper mapper) : IUserReposito
     {
         return await context.Users
             .Where(u => u.NormalizedEmail == email.ToUpper())
+            .Include(u => u.Photos)
             .FirstOrDefaultAsync();
     }
 
     public async Task<User?> GetUserById(int id)
     {
-        return await context.Users.FindAsync(id);
+        return await context.Users
+            .Include(u => u.Photos)
+            .FirstOrDefaultAsync(u => u.Id == id);
     }
 
     public void UpdateUser(User user)

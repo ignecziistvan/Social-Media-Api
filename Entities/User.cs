@@ -9,6 +9,7 @@ public class User : IdentityUser<int>
     public DateTime Created { get; set; } = DateTime.UtcNow;
     public DateTime LastActive { get; set; } = DateTime.UtcNow;
     public DateOnly DateOfBirth { get; set; }
+    public List<ProfilePhoto> Photos { get; set; } = [];
     public ICollection<UserRole> UserRoles { get; set; } = [];
     public List<Post> Posts { get; set; } = [];
     public List<Comment> Comments { get; set; } = [];

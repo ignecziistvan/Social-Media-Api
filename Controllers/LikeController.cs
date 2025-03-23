@@ -33,21 +33,21 @@ public class LikeController(ILikeRepository likeRepository, IPostRepository post
     [HttpPost("post/{postId}")]
     public async Task<ActionResult<LikeDto>> LikePost(int postId)
     {
-        int userId = User.GetUserId();
-        string username = User.GetUsername();
+        User? user = await userRepository.GetUserById(User.GetUserId());
+        if (user == null) return BadRequest("You are unauthorized");
 
         Post? post = await postRepository.GetPost(postId);
         if (post == null) return NotFound("Post was not found by ID");
 
-        Like? existingLike = await likeRepository.GetSingleLikeByUserIdAndPostId(userId, postId);
+        Like? existingLike = await likeRepository.GetSingleLikeByUserIdAndPostId(user.Id, postId);
         if (existingLike != null) 
             return BadRequest("You have already liked this Post");
 
         Like newLike = new() 
         {
-            UserId = userId,
+            UserId = user.Id,
             PostId = postId,
-            UserName = username 
+            UserName = user.UserName!
         };
 
         likeRepository.LikePost(newLike);

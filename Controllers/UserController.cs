@@ -5,13 +5,16 @@ using API.Extensions;
 using API.Helpers;
 using API.Interfaces;
 using AutoMapper;
+using CloudinaryDotNet.Actions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers;
 
-public class UserController(IUserRepository repository, UserManager<User> userManager, ITokenService tokenService, IMapper mapper) : BaseApiController
+public class UserController(
+    IUserRepository repository, UserManager<User> userManager, 
+    ITokenService tokenService, IPhotoService photoService, IMapper mapper) : BaseApiController
 {
     [HttpGet("{username}")]
     public async Task<ActionResult<UserDto>> GetUser([FromRoute] string username)
@@ -95,5 +98,77 @@ public class UserController(IUserRepository repository, UserManager<User> userMa
 
         return Ok(accountDto);
     }
+    
 
+    [Authorize]
+    [HttpPost("upload-photo")]
+    public async Task<ActionResult> UploadPhoto(IFormFile file)
+    {
+        var user = await repository.GetUserById(User.GetUserId());
+        if (user == null) return BadRequest("Could not find user");
+
+        var result = await photoService.AddPhoto(file);
+        if (result.Error != null) return BadRequest(result.Error.Message);
+
+        var photo = new ProfilePhoto {
+            Url = result.SecureUrl.AbsoluteUri,
+            PublicId = result.PublicId,
+            UserId = user.Id
+        };
+
+        ProfilePhoto? currentMain = user.Photos.FirstOrDefault(p => p.IsMain);
+        if (currentMain != null) currentMain.IsMain = false;
+        photo.IsMain = true;
+        
+        user.Photos.Add(photo);
+
+        if (!await repository.Complete()) return BadRequest("Failed to set this as main photo");
+
+        return Ok(mapper.Map<PhotoDto>(photo));
+    }
+
+    [Authorize]
+    [HttpPut("set-main-photo/{photoId}")]
+    public async Task<ActionResult> SetMainPhoto(int photoId)
+    {
+        var user = await repository.GetUserByUsername(User.GetUsername());
+        if (user == null) return BadRequest("Could not find user");
+
+        var photo = user.Photos.FirstOrDefault(p => p.Id == photoId);
+        if (photo == null) return BadRequest("Could not find photo by its id");
+        if (photo.IsMain) return BadRequest("This is already your main photo");
+
+        var currentMain = user.Photos.FirstOrDefault(p => p.IsMain);
+        if (currentMain != null) currentMain.IsMain = false;
+
+        photo.IsMain = true;
+
+        if (!await repository.Complete()) return BadRequest("Failed to set this as your main photo");
+        return NoContent();
+    }
+
+    [Authorize]
+    [HttpDelete("delete-photo/{photoId}")]
+    public async Task<ActionResult> DeletePhoto(int photoId)
+    {
+        var user = await repository.GetUserById(User.GetUserId());
+        if (user == null) return BadRequest("Could not find user");
+
+        ProfilePhoto? photo = user.Photos.FirstOrDefault(p => p.Id == photoId);
+
+        if (photo == null) return BadRequest("Could not find photo");
+        if (photo.IsMain) return BadRequest("Cannot delete your main photo");
+
+        if (photo.PublicId != null) 
+        {
+            var result = await photoService.DeletePhoto(photo.PublicId);
+            if (result.Error != null) return BadRequest(result.Error.Message);
+        }
+
+        user.Photos.Remove(photo);
+
+        if (!await repository.Complete()) return BadRequest("Failed to delete photo");
+
+        return NoContent();
+    }
 }

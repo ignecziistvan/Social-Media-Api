@@ -6,4 +6,5 @@ public class CreatePostDto
 {
     [Required]
     public string Text { get; set; } = string.Empty;
+    public IFormFile[] Files { get; set; } = [];
 }

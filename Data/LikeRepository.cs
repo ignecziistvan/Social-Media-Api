@@ -15,6 +15,7 @@ public class LikeRepository(DataContext context) : ILikeRepository
     {
         return await context.PostLikes
             .Where(l => l.PostId == postId)
+            .Include(l => l.User)
             .ToListAsync();
     }
 

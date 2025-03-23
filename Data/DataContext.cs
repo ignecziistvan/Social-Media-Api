@@ -1,4 +1,3 @@
-
 using API.Entities;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
@@ -14,6 +13,8 @@ public class DataContext(DbContextOptions options) : IdentityDbContext<User, Rol
     public DbSet<Comment> Comments { get; set; }
     public DbSet<Like> PostLikes { get; set; }
     public DbSet<Message> Messages { get; set; }
+    public DbSet<ProfilePhoto> ProfilePhotos { get; set; }
+    public DbSet<Photo> Photos { get; set; }
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -41,6 +42,18 @@ public class DataContext(DbContextOptions options) : IdentityDbContext<User, Rol
             .HasOne(c => c.User)
             .WithMany(u => u.Comments)
             .HasForeignKey(c => c.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        builder.Entity<ProfilePhoto>()
+            .HasOne(p => p.User)
+            .WithMany(u => u.Photos)
+            .HasForeignKey(p => p.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        builder.Entity<Photo>()
+            .HasOne(p => p.Post)
+            .WithMany(p => p.Photos)
+            .HasForeignKey(p => p.PostId)
             .OnDelete(DeleteBehavior.Cascade);
 
         builder.Entity<Comment>()

@@ -23,11 +23,13 @@ public class AuthController(UserManager<User> userManager, ITokenService tokenSe
         {
             user = await userManager.Users
                 .Where(user => user.NormalizedEmail== loginDto.UserNameOrEmail.ToUpper())
+                .Include(u => u.Photos)
                 .FirstOrDefaultAsync();
         } else 
         {
             user = await userManager.Users
                 .Where(user => user.NormalizedUserName == loginDto.UserNameOrEmail.ToUpper())
+                .Include(u => u.Photos)
                 .FirstOrDefaultAsync();
         }
 
@@ -38,6 +40,7 @@ public class AuthController(UserManager<User> userManager, ITokenService tokenSe
         var token = await tokenService.CreateToken(user);
 
         AccountDto accountDto = mapper.Map<AccountDto>(user);
+
         accountDto.Token = token;
 
         return Ok(accountDto);

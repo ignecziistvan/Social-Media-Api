@@ -14,6 +14,7 @@ public class PostRepository(DataContext context, IMapper mapper) : IPostReposito
     {
         IQueryable<PostDto> posts = context.Posts
             .OrderByDescending(p => p.Created)
+            .Include(p => p.Photos)
             .ProjectTo<PostDto>(mapper.ConfigurationProvider)
             .AsQueryable();
 
@@ -24,7 +25,10 @@ public class PostRepository(DataContext context, IMapper mapper) : IPostReposito
 
     public async Task<Post?> GetPost(int id)
     {
-        return await context.Posts.FindAsync(id);
+        return await context.Posts
+            .Where(p => p.Id == id)
+            .Include(p => p.Photos)
+            .FirstOrDefaultAsync();
     }
 
     public async Task<PaginatedList<PostDto>> GetPostsOfUser(int userId, PaginationParams paginationParams)
@@ -32,6 +36,7 @@ public class PostRepository(DataContext context, IMapper mapper) : IPostReposito
         var posts = context.Posts
             .Where(p => p.UserId == userId)
             .OrderByDescending(p => p.Created)
+            .Include(p => p.Photos)
             .ProjectTo<PostDto>(mapper.ConfigurationProvider)
             .AsQueryable();
 
