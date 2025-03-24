@@ -5,7 +5,6 @@ using API.Extensions;
 using API.Helpers;
 using API.Interfaces;
 using AutoMapper;
-using CloudinaryDotNet.Actions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -41,7 +40,7 @@ public class UserController(
     [HttpPut]
     public async Task<ActionResult<AccountDto>> UpdateUser(UpdateUserDto dto)
     {
-        User? user = await userManager.FindByNameAsync(User.GetUsername());
+        User? user = await repository.GetUserById(User.GetUserId());
         if (user == null) return BadRequest("Could not find user");
 
         if (!string.IsNullOrEmpty(dto.Username)) {

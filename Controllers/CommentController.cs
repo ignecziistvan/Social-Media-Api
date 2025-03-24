@@ -53,14 +53,15 @@ public class CommentController(ICommentRepository commentRepository,
     {
         if (dto.Text == null || dto.Text == string.Empty) return BadRequest("Provide a text");
         
-        int userId = User.GetUserId();
+        User? user = await userRepository.GetUserById(User.GetUserId());
+        if (user == null) return BadRequest("You are unauthenticated");
 
         Post? post = await postRepository.GetPost(postId);
         if (post == null) return NotFound("Post was not found");
 
         Comment comment = new() 
         {
-            UserId = userId,
+            User = user,
             PostId = post.Id,
             Text = dto.Text
         };

@@ -4,7 +4,6 @@ using API.Entities;
 using API.Extensions;
 using API.Helpers;
 using API.Interfaces;
-using API.Services;
 using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -56,13 +55,14 @@ public class PostController(IPostRepository repository, IUserRepository userRepo
     [HttpPost]
     public async Task<ActionResult<PostDto>> CreatePost(CreatePostDto dto)
     {
-        int userId = User.GetUserId();
+        User? user = await userRepository.GetUserById(User.GetUserId());
+        if (user == null) return BadRequest("You are unauthenticated");
 
         if (dto.Files.Length > 10) return BadRequest("You cannot add more than 10 photos to your post");
 
         Post newPost = new()
         {
-            UserId = userId,
+            User = user,
             Text = dto.Text,
             Photos = []
         };
@@ -84,7 +84,6 @@ public class PostController(IPostRepository repository, IUserRepository userRepo
         if (!await repository.Complete()) return BadRequest("Failed to create Post");
 
         PostDto postDto = mapper.Map<PostDto>(newPost);
-        postDto.UserName = User.GetUsername();
 
         return Ok(postDto);        
     }
